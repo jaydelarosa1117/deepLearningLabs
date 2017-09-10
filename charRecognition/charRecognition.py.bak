@@ -1,0 +1,127 @@
+import numpy as np
+import math
+import scipy.misc as scp
+
+def fileToMatrix(fileName):
+	return np.loadtxt(fileName, delimiter=',')
+
+
+
+def setRange(A):
+	A = A/255
+	return A
+
+
+
+def relu(A):
+	for i in range(A.size):
+			if A[i] < 0:
+				A[i] = 0;
+	return A
+
+
+#sums the image and biases
+def addBiases(A,b):
+	A = A + b
+	return A
+
+
+
+#finds the sigmoid of the layers of the vector
+def sigmoid(A):
+	for i in range(A.size):
+		A[i] = 1/(1+(math.exp(-A[i]))) 
+	return A
+
+
+
+#recieves array of size 10 and returns the index of the larges value
+def findMaxIndex(v):
+	return np.argmax(v)
+
+
+
+def matches(A,v):
+	return A == v 
+
+
+
+def mismatches(o, y):
+	mismatches = np.array([])
+	i = 0
+	for out, actual in zip(o,y):
+		if not matches(findMaxIndex(out), actual):
+			mismatches = np.append(mismatches, i)
+		i += 1
+	return mismatches
+		
+def displayMismatch(img):
+	img = img.reshape(28,28)
+	img.shape
+	img = img * 255
+	scp.imshow(img)
+
+
+def main():
+	xinput = fileToMatrix("xtest.txt")
+	xinput = setRange(xinput)
+	
+	try:
+		xinput.shape[1]
+	except:
+		xinput = xinput.reshape([1,xinput.size])
+		
+	
+	W0 = fileToMatrix("W0.txt")
+	B0 = fileToMatrix("B0.txt")
+	W1 = fileToMatrix("W1.txt")
+	B1 = fileToMatrix("B1.txt")
+	W2 = fileToMatrix("W2.txt")
+	B2 = fileToMatrix("B2.txt")
+	
+	h0 = np.empty(shape=([xinput.shape[0],W0.shape[1]]))
+	for i, x in enumerate(xinput):
+		h0[i] = np.matmul(x, W0)
+	for i, h in enumerate(h0):
+		h0[i] = addBiases(h, B0)
+	for i, h in enumerate(h0):
+		h0[i] = relu(h)
+	
+	
+	h1 = np.empty(shape=([h0.shape[0],W1.shape[1]]))
+	for i, h in enumerate(h0):
+		h1[i] = np.matmul(h,W1)
+	for i, h in enumerate(h1):
+		h1[i] = addBiases(h, B1)
+	for i, h in enumerate(h1):
+		h1[i] = relu(h)
+	
+	out = np.empty(shape=([h1.shape[0],W2.shape[1]]))
+	for i, h in enumerate(h1):
+		out[i] = np.matmul(h, W2)
+	for i, o in enumerate(out):
+		out[i] = addBiases(o, B2)
+	for i, o in enumerate(out):
+		out[i] = sigmoid(o)
+	
+
+	yOutput = fileToMatrix("ytest.txt")
+	mismatchedList = mismatches(out, yOutput)
+	
+	print(findMaxIndex(out[0]))
+	 
+	
+	for ij in range(50):
+		displayMismatch(xinput[int(mismatchedList[ij])])
+	
+	
+
+
+	
+main()
+
+
+
+
+
+	
