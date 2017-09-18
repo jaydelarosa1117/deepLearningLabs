@@ -67,7 +67,7 @@ def hotEncoder(yOut):
 def findWeightsRandom(X, Y):
 	Y = hotEncoder(Y) 
 	wBest = randWeights(0.2)
-	for i in range(5000):
+	for i in range(1000):
 		print(i)
 		subsetSize = random.randint(50,1000)
 		randRows= np.random.randint(X.shape[0], size=subsetSize)
@@ -174,66 +174,72 @@ def alg4(X, Y):
 
 
 
-def noHLayerTrain(X,Y):
-	Y = hotEncoder(Y)
+def noHLayerTrain(xtrain,ytrain,xtest,ytest):
+	ytrain = hotEncoder(ytrain)
 	W = ((np.random.rand(784,10)-.5)*.2)
 	B = ((np.random.rand(10)-.5)*.2)
 	
 	lda = .00001
-	for i in range(300):
+	for i in range(500):
 		subsetSize = random.randint(50,1000)
-		randRows= np.random.randint(X.shape[0], size=subsetSize)
-		subsetX = X[randRows,:]/255.0
-		subsetY = Y[randRows ]
-		
-		
+		randRows= np.random.randint(xtrain.shape[0], size=subsetSize)
+		subsetX = xtrain[randRows,:]/255.0
+		subsetY = ytrain[randRows ]
+				
 		P = np.matmul(subsetX,W) + B
 		
 		W = W - (lda * (np.matmul(np.transpose(subsetX),(P-subsetY))))
-		B = B - np.sum(lda * ((P-subsetY)),axis=0)
-		print(W)
-		print(B)
-		
-	X = np.load("xtest.npy")
-	Y = np.load("ytest.npy")
-	P = np.matmul(X,W) + B
-	print(P)
+		B = B - np.sum(lda * ((P-subsetY)),axis=0)		
+	
+	P = np.matmul(xtest,W) + B
 	out = findMaxIndex(P)
 	count = 0
 	for i in range(out.size):
-		if out[i] == Y[i]:
+		if out[i] == ytest[i]:
 			count += 1
-	print("the output is ",count)
+	print("the accuracy is ",count*100/xtest.shape[0], "%")
 	
 	
 	
 	
 	return W
 
-def main():
-#	X = fileToMatrix("xtrain.txt")
-	Y = np.load("ytrain.npy")
-	X = np.load("xtrain.npy")
-#	Y = np.load("ytrain.npy")
 
-	
-	print("done Reading ")
-	W =	 findWeightsRandom(X,Y)
-#	W = findWeightsPseudoinverse(X,Y)
-#	W = findWeightsBackprop(X,Y)
-#	W = alg4(X,Y)
-#	noHLayerTrain(X, Y)
-	X = np.load("xtest.npy")
-	Y = np.load("ytest.npy")
+def calculateAccuracy(W,X,Y):
 	count = 0
 	out = findMaxIndex(classify(W,X))
 	for i in range(out.size):
 		if out[i] == Y[i]:
 			count += 1
-	print("the output is ",count*100/10000)
+	print("the accuracy is ",count*100/X.shape[0], "%")
+
+
+def main():
+#	X = fileToMatrix("xtrain.txt")
+#	Y = fileToMatrix("ytrain.txt")
+#	xtest = fileToMatrix("xtest.txt")
+#	ytest = fileToMatrix("ytest.txt")
+	Y = np.load("ytrain.npy")
+	X = np.load("xtrain.npy")
+	xtest = np.load("xtest.npy")
+	ytest = np.load("ytest.npy")
+	print("done Reading ")
+
+
+#	W =	 findWeightsRandom(X,Y)
+#	calculateAccuracy(W,xtest,ytest)
+#	
+#	W = findWeightsPseudoinverse(X,Y)
+#	calculateAccuracy(W,xtest,ytest)
+#	
+#	W = findWeightsBackprop(X,Y)
+#	calculateAccuracy(W,xtest,ytest)
+#
+#	W = alg4(X,Y)
+#	calculateAccuracy(W,xtest,ytest)
+
+	noHLayerTrain(X, Y,xtest,ytest)
 	
+
 main()
-	
 
-
-	
